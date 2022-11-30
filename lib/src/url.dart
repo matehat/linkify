@@ -7,7 +7,7 @@ final _urlRegex = RegExp(
 );
 
 final _looseUrlRegex = RegExp(
-  r'^(.*?)((https?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*))',
+  r'^(([^:/?#]+):)(//([^/?#]*))([^?#]*)(\?([^#]*))?(#(.*))?',
   caseSensitive: false,
   dotAll: true,
 );
@@ -26,13 +26,9 @@ class UrlLinkifier extends Linkifier {
 
     elements.forEach((element) {
       if (element is TextElement) {
-        var loose = false;
-        var match = _urlRegex.firstMatch(element.text);
-
-        if (match == null && options.looseUrl) {
-          match = _looseUrlRegex.firstMatch(element.text);
-          loose = true;
-        }
+        var match = options.looseUrl
+            ? _looseUrlRegex.firstMatch(element.text)
+            : _urlRegex.firstMatch(element.text);
 
         if (match == null) {
           list.add(element);
@@ -55,7 +51,7 @@ class UrlLinkifier extends Linkifier {
 
             var url = originalUrl;
 
-            if (loose || !originalUrl.startsWith(_protocolIdentifierRegex)) {
+            if (!originalUrl.startsWith(_protocolIdentifierRegex)) {
               originalUrl = (options.defaultToHttps ? "https://" : "http://") +
                   originalUrl;
             }
